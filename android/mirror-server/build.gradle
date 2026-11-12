@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.nativemirror'
+version = '2.0'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+    }
+}
+
+tasks.named('jar') {
+    archiveFileName = 'mirror-server.jar'
+    destinationDirectory = file("$rootDir/build")
+}
