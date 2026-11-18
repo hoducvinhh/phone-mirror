@@ -4,5 +4,3 @@ build/
 *.exe
 *.pdb
 *.jar
-__pycache__/
-*.pyc
