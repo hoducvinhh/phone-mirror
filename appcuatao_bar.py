@@ -1,6 +1,6 @@
 """
 Appcuatao Docked Ribbon - Thanh tien ich co dinh gan chat vao cua so phan chieu
-Toi uu hoa toc do phan hoi, khong nhay vi tri, dinh chat vao mep phai cua so.
+Tu dong tat ngay lap tuc 100% khi dong app, khong bao gio bi dinh lai man hinh.
 """
 import ctypes
 from ctypes import wintypes
@@ -20,6 +20,7 @@ except Exception:
         pass
 
 user32 = ctypes.windll.user32
+kernel32 = ctypes.windll.kernel32
 dwmapi = ctypes.windll.dwmapi
 
 # Win32 Constants
@@ -33,6 +34,8 @@ SWP_NOACTIVATE = 0x0010
 SWP_SHOWWINDOW = 0x0040
 HWND_TOPMOST = -1
 GWLP_HWNDPARENT = -8
+PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+STILL_ACTIVE = 259
 
 class ToolTip:
     def __init__(self, widget, text_func):
@@ -91,12 +94,11 @@ class AppcuataoDockedBar:
         self.root.attributes("-topmost", True)
         self.root.configure(bg="#11111b")
 
-        # Cố định luôn bên phải (Fixed cứng, không bị nhảy loạn)
         self.bar_width = 44
         self.scrcpy_hwnd = None
+        self.scrcpy_pid = None
         self.my_hwnd = None
         self.has_connected = False
-        self.missing_count = 0
         self.wait_count = 0
         self.last_box = None
         self.is_hidden = True
@@ -110,7 +112,7 @@ class AppcuataoDockedBar:
         self._scrcpy_start_w = 0
         self._scrcpy_start_h = 0
 
-        # Ban đầu ẩn hoàn toàn cho đến khi phát hiện thấy cửa sổ Appcuatao
+        # Ban đầu ẩn hoàn toàn
         self.root.withdraw()
 
         self.build_ui()
@@ -127,6 +129,25 @@ class AppcuataoDockedBar:
         except Exception:
             pass
         return self.root.winfo_id()
+
+    def exit_app(self):
+        """Dong hoan toan ung dung ngay lap tuc, khong de lai tien trinh ma"""
+        try:
+            self.root.destroy()
+        except Exception:
+            pass
+        os._exit(0)
+
+    def close_all(self):
+        """Nguoi dung bam nut X tren thanh cong cu de thoat ca app"""
+        # Tat scrcpy neu con chay
+        if self.scrcpy_pid:
+            subprocess.Popen(["taskkill", "/F", "/PID", str(self.scrcpy_pid)],
+                             creationflags=0x08000000)
+        else:
+            subprocess.Popen(["taskkill", "/F", "/IM", "scrcpy.exe"],
+                             creationflags=0x08000000)
+        self.exit_app()
 
     def build_ui(self):
         # 1. Grip kéo di chuyển toàn bộ cụm cửa sổ
@@ -161,6 +182,11 @@ class AppcuataoDockedBar:
         self.create_btn("⚡", self.cmd_power, "Tắt/Bật màn hình điện thoại (chống nóng máy)", fg="#fab387")
         self.create_btn("🔊", self.cmd_volup, "Tăng âm lượng", fg="#94e2d5")
         self.create_btn("🔉", self.cmd_voldn, "Giảm âm lượng", fg="#94e2d5")
+
+        self.add_sep()
+
+        # 5. Nút đóng thoát ứng dụng dứt điểm
+        self.create_btn("✖", self.close_all, "Đóng hoàn toàn Appcuatao", fg="#f38ba8")
 
     def create_btn(self, icon, command, tooltip, fg="#cdd6f4"):
         def wrapper():
@@ -209,31 +235,42 @@ class AppcuataoDockedBar:
             if mod_key:
                 user32.keybd_event(mod_key, 0, KEYEVENTF_KEYUP, 0)
 
-    def find_target_window(self):
-        # 1. Tìm cửa sổ Appcuatao chính xác
-        hwnd = user32.FindWindowW(None, "Appcuatao")
-        if hwnd and user32.IsWindowVisible(hwnd) and hwnd != self.my_hwnd:
-            return hwnd
+    def get_process_image_name(self, hwnd):
+        pid = wintypes.DWORD()
+        user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+        if pid.value == 0:
+            return "", 0
+        h_proc = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid.value)
+        if not h_proc:
+            return "", pid.value
+        buff = ctypes.create_unicode_buffer(512)
+        size = wintypes.DWORD(512)
+        name = ""
+        if kernel32.QueryFullProcessImageNameW(h_proc, 0, buff, ctypes.byref(size)):
+            name = os.path.basename(buff.value).lower()
+        kernel32.CloseHandle(h_proc)
+        return name, pid.value
 
-        # 2. Tìm qua EnumWindows nếu tiêu đề có tiền tố
+    def find_target_window(self):
+        """Chi tim dung cua so thuoc ve tien trinh scrcpy.exe, khong bao gio nhan nham trinh duyet hay editor"""
         candidates = []
         def enum_cb(h, extra):
             if h == self.my_hwnd or not user32.IsWindowVisible(h):
                 return True
-            length = user32.GetWindowTextLengthW(h)
-            if length > 0:
-                buff = ctypes.create_unicode_buffer(length + 1)
-                user32.GetWindowTextW(h, buff, length + 1)
-                title = buff.value
-                if title == self.BAR_TITLE:
-                    return True
-                if title == "Appcuatao" or "scrcpy" in title.lower():
-                    candidates.append(h)
+            proc_name, pid = self.get_process_image_name(h)
+            if proc_name == "scrcpy.exe":
+                length = user32.GetWindowTextLengthW(h)
+                if length > 0:
+                    buff = ctypes.create_unicode_buffer(length + 1)
+                    user32.GetWindowTextW(h, buff, length + 1)
+                    title = buff.value
+                    if "Appcuatao" in title or title == "scrcpy":
+                        candidates.append((h, pid))
             return True
 
         CMPFUNC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
         user32.EnumWindows(CMPFUNC(enum_cb), 0)
-        return candidates[0] if candidates else None
+        return candidates[0] if candidates else (None, None)
 
     def get_bounds(self, hwnd):
         try:
@@ -251,7 +288,6 @@ class AppcuataoDockedBar:
         if not self.scrcpy_hwnd or not user32.IsWindow(self.scrcpy_hwnd):
             return
 
-        # Nếu cửa sổ Appcuatao thu nhỏ thì ẩn thanh công cụ
         if user32.IsIconic(self.scrcpy_hwnd):
             if not self.is_hidden:
                 self.root.withdraw()
@@ -272,42 +308,54 @@ class AppcuataoDockedBar:
             return
         self.last_box = curr_box
 
-        # CỐ ĐỊNH CỨNG LUÔN Ở MÉP PHẢI CỬA SỔ
+        # Dính chặt vào mép phải cửa sổ scrcpy
         bar_x = right
         bar_y = top
         bar_w = self.bar_width
         bar_h = h
 
-        # Đặt vị trí tức thì bằng Win32 SetWindowPos siêu tốc (không trễ)
         bar_hwnd = self.my_hwnd or self.root.winfo_id()
         user32.SetWindowPos(bar_hwnd, HWND_TOPMOST, bar_x, bar_y, bar_w, bar_h,
                             SWP_NOACTIVATE | SWP_SHOWWINDOW)
 
     def check_loop(self):
-        found = self.find_target_window()
-        if found:
-            if not self.has_connected:
-                self.has_connected = True
-                self.scrcpy_hwnd = found
-                # Thiết lập ownership
-                try:
-                    bar_h = self.my_hwnd or self.root.winfo_id()
-                    user32.SetWindowLongPtrW(bar_h, GWLP_HWNDPARENT, found)
-                except Exception:
-                    pass
-            self.scrcpy_hwnd = found
-            self.missing_count = 0
+        # 1. Kiểm tra tiến trình scrcpy nếu đã từng kết nối
+        if self.has_connected:
+            # Nếu cửa sổ bị đóng hoặc không còn tồn tại -> THOÁT NGAY LẬP TỨC
+            if not self.scrcpy_hwnd or not user32.IsWindow(self.scrcpy_hwnd):
+                self.exit_app()
+                return
+
+            if self.scrcpy_pid:
+                h_proc = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, self.scrcpy_pid)
+                if not h_proc:
+                    self.exit_app()
+                    return
+                exit_code = wintypes.DWORD()
+                kernel32.GetExitCodeProcess(h_proc, ctypes.byref(exit_code))
+                kernel32.CloseHandle(h_proc)
+                if exit_code.value != STILL_ACTIVE:
+                    self.exit_app()
+                    return
+
             self.sync_position()
         else:
-            if self.has_connected:
-                self.missing_count += 1
-                if self.missing_count > 25:  # Scrcpy đã đóng -> đóng bar
-                    self.root.destroy()
-                    return
+            # Chưa kết nối: tìm kiếm scrcpy
+            found_hwnd, found_pid = self.find_target_window()
+            if found_hwnd:
+                self.has_connected = True
+                self.scrcpy_hwnd = found_hwnd
+                self.scrcpy_pid = found_pid
+                try:
+                    bar_h = self.my_hwnd or self.root.winfo_id()
+                    user32.SetWindowLongPtrW(bar_h, GWLP_HWNDPARENT, found_hwnd)
+                except Exception:
+                    pass
+                self.sync_position(force=True)
             else:
                 self.wait_count += 1
-                if self.wait_count > 300:  # Quá 15 giây không mở -> đóng
-                    self.root.destroy()
+                if self.wait_count > 250:  # Chờ quá 12s không thấy scrcpy -> tự hủy
+                    self.exit_app()
                     return
 
         self.root.after(16, self.check_loop)
@@ -336,21 +384,19 @@ class AppcuataoDockedBar:
                             SWP_NOZORDER | SWP_NOACTIVATE)
         self.sync_position(force=True)
 
-    # --- Xoay ngang màn hình (Tự động mở rộng từ TÂM, KHÔNG NHẢY VỊ TRÍ) ---
+    # --- Xoay ngang màn hình (Mở rộng từ tâm, không lệch vị trí) ---
     def toggle_rotation(self):
         self.is_landscape = not self.is_landscape
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
 
         if self.is_landscape:
-            # Xoay ngang điện thoại xem phim
             self.run_adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
             self.run_adb("shell", "settings", "put", "system", "user_rotation", "1")
 
             target_w = min(1200, max(880, int(screen_w * 0.58)))
             target_h = int(target_w * (1080.0 / 2408.0))
         else:
-            # Xoay dọc lại bình thường
             self.run_adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
             self.run_adb("shell", "settings", "put", "system", "user_rotation", "0")
 
@@ -359,14 +405,12 @@ class AppcuataoDockedBar:
 
         if self.scrcpy_hwnd and user32.IsWindow(self.scrcpy_hwnd):
             left, top, right, bottom = self.get_bounds(self.scrcpy_hwnd)
-            # Cố định trọng tâm: giữ nguyên tâm cửa sổ thay vì dịch sang mép
             center_x = (left + right) // 2
             center_y = (top + bottom) // 2
 
             new_x = center_x - target_w // 2
             new_y = center_y - target_h // 2
 
-            # Đảm bảo không vượt ra ngoài màn hình
             new_x = max(10, min(new_x, screen_w - target_w - self.bar_width - 15))
             new_y = max(10, min(new_y, screen_h - target_h - 40))
 
