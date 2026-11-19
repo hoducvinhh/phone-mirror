@@ -8,6 +8,13 @@ if exist "%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe" (
     set "PY_EXE=%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe"
 )
 
+:: Neu co IP Wi-Fi da tung ket noi, tu dong ket noi lai khong day
+if exist "%~dp0.last_wifi_ip.txt" (
+    for /f "usebackq tokens=*" %%A in ("%~dp0.last_wifi_ip.txt") do (
+        if not "%%A"=="" adb connect %%A:5555 >nul 2>&1
+    )
+)
+
 start "" "%PY_EXE%" "%~dp0appcuatao_bar.py"
 
 scrcpy --window-title "Appcuatao" --video-codec=h265 --video-bit-rate=24M --max-size=1920 --video-buffer=0 --audio-buffer=20 --max-fps=60 --window-x 160 --window-y 60 --no-window-aspect-ratio-lock --stay-awake
@@ -21,10 +28,14 @@ echo.
 echo ========================================================
 echo [!] KHONG THE KET NOI DIEN THOAI
 echo ========================================================
-echo Vui long kiem tra:
+echo Neu ket noi bang CAP USB:
 echo   1. Cap USB da cam chac chan vao may tinh.
-echo   2. Tren dien thoai da bat USB Debugging.
-echo   3. Man hinh dien thoai da sang va bam Cho phep.
+echo   2. Tren dien thoai da bat USB Debugging (Go loi USB).
+echo   3. Man hinh dien thoai da mo khoa va bam Cho phep.
+echo.
+echo Neu muon dung KHONG DAY (WI-FI):
+echo   - Hay chay file [Ket_Noi_Wifi.bat] de kich hoat ket noi
+echo     khong day lan dau tien!
 echo ========================================================
 echo.
 pause
