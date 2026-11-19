@@ -64,12 +64,14 @@ Một thanh công cụ màu tối hiện đại sẽ tự động đính kèm �
 | **🔙** | **Quay lại (Back)** | Tương đương nút Back trên điện thoại hoặc Click chuột phải |
 | **🏠** | **Trang chủ (Home)** | Quay về màn hình chính hoặc Bấm con lăn chuột |
 | **📑** | **Đa nhiệm** | Mở danh sách các ứng dụng đang chạy gần đây (Recent Apps) |
-| **🔄** | **Xoay màn hình** | Xoay ngang để xem phim 16:9 / Xoay dọc để lướt mạng xã hội |
-| **📐** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen khi kéo co giãn cửa sổ |
+| **↔+** | **Mở rộng chiều ngang** | Kéo dài chiều ngang (+60px) trong khi **giữ nguyên chiều cao** |
+| **↔-** | **Thu hẹp chiều ngang** | Thu gọn chiều ngang (-60px) trong khi **giữ nguyên chiều cao** |
+| **↕+** | **Kéo dài chiều cao** | Kéo dài chiều cao (+60px) trong khi **giữ nguyên chiều ngang** |
+| **↕-** | **Thu gọn chiều cao** | Thu gọn chiều cao (-60px) trong khi **giữ nguyên chiều ngang** |
+| **📐** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen, đưa về tỉ lệ chuẩn điện thoại (Alt + W) |
+| **🔄** | **Xoay màn hình** | Xoay ngang để xem phim 16:9 / Xoay dọc để lướt mạng xã hội (Alt + R) |
 | **🔲** | **Toàn màn hình** | Phóng to toàn bộ màn hình laptop để xem phim cực đã (F11) |
-| **🔊** | **Tăng âm lượng** | Tăng âm lượng loa điện thoại/máy tính |
-| **🔉** | **Giảm âm lượng** | Giảm âm lượng loa điện thoại/máy tính |
-| **🔔** | **Thông báo** | Kéo mở thanh thông báo của điện thoại xuống |
+| **🔊 / 🔉** | **Âm lượng** | Tăng hoặc giảm âm lượng |
 | **⚡** | **Tắt/Bật màn hình** | Tắt hoặc bật màn hình điện thoại vật lý |
 | **✕** | **Đóng thanh công cụ** | Ẩn thanh công cụ điều khiển |
 

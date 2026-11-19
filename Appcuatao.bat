@@ -37,10 +37,17 @@ echo   - Bấm nút [⇄] ở đầu thanh để CHUYỂN THANH SANG BÊN TRÁI 
 echo ======================================================================
 echo.
 
+:: Tìm pythonw để khởi chạy thanh điều khiển
+set PYTHON_CMD=pythonw
+if exist "%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe" (
+    set PYTHON_CMD="%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe"
+)
+
 :: Khởi chạy thanh công cụ Sidebar ở chế độ chạy ngầm
-start "" pythonw "%~dp0appcuatao_bar.py"
+start "" %PYTHON_CMD% "%~dp0appcuatao_bar.py"
 
 :: Khởi chạy cửa sổ phản chiếu màn hình
-scrcpy --window-title "Appcuatao" --stay-awake --max-fps 60
+:: Bổ sung --no-window-aspect-ratio-lock để cho phép kéo dài ngang giữ nguyên cao, kéo dài cao giữ nguyên ngang
+scrcpy --window-title "Appcuatao" --no-window-aspect-ratio-lock --stay-awake --max-fps 60
 
 exit /b 0
