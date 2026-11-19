@@ -58,22 +58,25 @@ Mỗi khi muốn phản chiếu màn hình điện thoại lên máy tính, bạ
 
 Một thanh công cụ màu tối hiện đại sẽ tự động đính kèm ở cạnh cửa sổ điện thoại và di chuyển theo cửa sổ:
 
+### 1. Thanh Công Cụ Tích Hợp Trực Tiếp (Sidebar Liền Khối)
+
+Thanh công cụ được **gắn liền trực tiếp vào trong cùng một cửa sổ ứng dụng** (không bị tách rời thành cửa sổ riêng), di chuyển và co giãn mượt mà theo cửa sổ:
+
 | Biểu tượng | Tên chức năng | Chi tiết |
 |:---:|:---|:---|
-| **⇄** | **Đổi bên** | Nhấn để chuyển thanh công cụ sang **bên Trái** hoặc **bên Phải** |
-| **🔙** | **Quay lại (Back)** | Tương đương nút Back trên điện thoại hoặc Click chuột phải |
-| **🏠** | **Trang chủ (Home)** | Quay về màn hình chính hoặc Bấm con lăn chuột |
-| **📑** | **Đa nhiệm** | Mở danh sách các ứng dụng đang chạy gần đây (Recent Apps) |
-| **↔+** | **Mở rộng chiều ngang** | Kéo dài chiều ngang (+60px) trong khi **giữ nguyên chiều cao** |
-| **↔-** | **Thu hẹp chiều ngang** | Thu gọn chiều ngang (-60px) trong khi **giữ nguyên chiều cao** |
-| **↕+** | **Kéo dài chiều cao** | Kéo dài chiều cao (+60px) trong khi **giữ nguyên chiều ngang** |
-| **↕-** | **Thu gọn chiều cao** | Thu gọn chiều cao (-60px) trong khi **giữ nguyên chiều ngang** |
-| **📐** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen, đưa về tỉ lệ chuẩn điện thoại (Alt + W) |
-| **🔄** | **Xoay màn hình** | Xoay ngang để xem phim 16:9 / Xoay dọc để lướt mạng xã hội (Alt + R) |
-| **🔲** | **Toàn màn hình** | Phóng to toàn bộ màn hình laptop để xem phim cực đã (F11) |
-| **🔊 / 🔉** | **Âm lượng** | Tăng hoặc giảm âm lượng |
-| **⚡** | **Tắt/Bật màn hình** | Tắt hoặc bật màn hình điện thoại vật lý |
-| **✕** | **Đóng thanh công cụ** | Ẩn thanh công cụ điều khiển |
+| **⇄ Đổi bên** | **Đổi bên** | Chuyển thanh công cụ sang **bên Trái** hoặc **bên Phải** ngay trong cửa sổ |
+| **🔄 Xoay ngang** | **Xoay ngang màn hình** | Xoay điện thoại sang ngang và tự động mở rộng cửa sổ xem phim 16:9 |
+| **📱 Xoay dọc** | **Xoay dọc màn hình** | Xoay điện thoại trở lại dạng dọc bình thường |
+| **↔+ Rộng** | **Mở rộng chiều ngang** | Kéo dài chiều ngang (+60px) trong khi **giữ nguyên chiều cao** |
+| **↔- Hẹp** | **Thu hẹp chiều ngang** | Thu gọn chiều ngang (-60px) trong khi **giữ nguyên chiều cao** |
+| **↕+ Cao** | **Kéo dài chiều cao** | Kéo dài chiều cao (+60px) trong khi **giữ nguyên chiều ngang** |
+| **↕- Thấp** | **Thu gọn chiều cao** | Thu gọn chiều cao (-60px) trong khi **giữ nguyên chiều ngang** |
+| **📐 Căn vừa** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen, đưa về tỉ lệ chuẩn điện thoại |
+| **🔲 Toàn màn** | **Toàn màn hình** | Phóng to toàn bộ màn hình laptop để xem phim cực đã (F11) |
+| **🔙 Quay lại** | **Quay lại (Back)** | Tương đương nút Back trên điện thoại hoặc Click chuột phải |
+| **🏠 Home** | **Trang chủ (Home)** | Quay về màn hình chính hoặc Bấm con lăn chuột |
+| **📑 Đa nhiệm** | **Đa nhiệm** | Mở danh sách các ứng dụng đang chạy gần đây (Recent Apps) |
+| **⚡ Tắt màn đt** | **Tắt/Bật màn hình** | Tắt hoặc bật màn hình điện thoại vật lý (tiết kiệm pin & chống nóng) |
 
 ---
 
