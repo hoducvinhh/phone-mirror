@@ -27,3 +27,21 @@ echo.
 pause
 
 :end
+
+scrcpy --window-title "Appcuatao" --video-codec=h265 --video-bit-rate=24M --max-size=1920 --video-buffer=0 --audio-buffer=20 --max-fps=60 --window-x 160 --window-y 60 --no-window-aspect-ratio-lock --stay-awake
+
+if %ERRORLEVEL% equ 0 goto :end
+
+echo.
+echo ========================================================
+echo [!] KHONG THE KET NOI DIEN THOAI
+echo ========================================================
+echo Vui long kiem tra:
+echo   1. Cap USB da cam chac chan vao may tinh.
+echo   2. Tren dien thoai da bat USB Debugging.
+echo   3. Man hinh dien thoai da sang va bam Cho phep.
+echo ========================================================
+echo.
+pause
+
+:end
