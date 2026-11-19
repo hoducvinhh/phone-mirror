@@ -66,7 +66,6 @@ def load_saved_wifi_ip():
     return None
 
 def query_phone_wifi_ip(serial):
-    # Lấy IP Wi-Fi từ điện thoại đang cắm USB
     out = run_adb("-s", serial, "shell", "ip", "-f", "inet", "addr", "show", "wlan0")
     m = re.search(r"inet\s+(\d+\.\d+\.\d+\.\d+)", out)
     if m:
@@ -87,48 +86,49 @@ def main():
     print("=" * 60)
 
     usb_devs, wifi_devs = get_devices()
-    target_serial = None
+    device_selector = []
     mode = None
 
-    # --- KỊCH BẢN 1: CÓ CÁP USB -> ƯU TIÊN TUYỆT ĐỐI ---
+    # --- KỊCH BẢN 1: CÓ CÁP USB -> ƯU TIÊN SỐ 1 ---
     if usb_devs:
-        target_serial = usb_devs[0]
         mode = "USB"
-        print(f"\n[+] PHAT HIEN CAP USB: {target_serial}")
-        print("    -> UU TIEN PHAN CHIEU QUA USB (Do muot 60 FPS, khong do tre)!\n")
+        device_selector = ["-d"]  # Scrcpy ưu tiên dùng cổng USB
+        print(f"\n[+] PHAT HIEN CAP USB: {usb_devs[0]}")
+        print("    -> UU TIEN PHAN CHIEU QUA USB (60 FPS, khong do tre)!\n")
 
-        # Tự động cập nhật IP Wi-Fi và bật port 5555 ngầm để chuẩn bị sẵn khi rút cáp
-        phone_ip = query_phone_wifi_ip(target_serial)
-        if phone_ip:
-            save_wifi_ip(phone_ip)
-            subprocess.Popen([get_adb_path(), "-s", target_serial, "tcpip", "5555"],
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Lưu IP ngầm để lần sau rút cáp vẫn biết IP (KHÔNG chạy adb tcpip để tránh reset USB)
+        try:
+            phone_ip = query_phone_wifi_ip(usb_devs[0])
+            if phone_ip:
+                save_wifi_ip(phone_ip)
+        except Exception:
+            pass
 
-    # --- KỊCH BẢN 2: KHÔNG CÓ CÁP USB -> TỰ ĐỘNG TÌM WI-FI ---
+    # --- KỊCH BẢN 2: KHÔNG CÓ CÁP USB -> TỰ ĐỘNG DÙNG WI-FI ---
     else:
-        print("\n[*] Khong thay cap USB. Dang tu dong chuyen sang WI-FI...")
+        print("\n[*] Khong thay cap USB. Dang chuyen sang che do WI-FI...")
 
-        # 2a. Nếu đã có thiết bị Wi-Fi đang kết nối sẵn trong adb
+        # 2a. Nếu đã kết nối Wi-Fi sẵn trong adb
         if wifi_devs:
-            target_serial = wifi_devs[0]
-            mode = "WIFI"
-            print(f"[v] Da ket noi san qua Wi-Fi: {target_serial}\n")
+            mode = "WI-FI"
+            device_selector = ["-e"]  # Scrcpy dùng kết nối TCP/IP
+            print(f"[v] Da ket noi qua Wi-Fi: {wifi_devs[0]}\n")
         else:
-            # 2b. Thử kết nối vào IP đã lưu trước đó
+            # 2b. Thử kết nối vào IP đã lưu
             saved_ip = load_saved_wifi_ip()
             if saved_ip:
-                print(f"[*] Dang thu ket noi toi dia chi Wi-Fi da nho: {saved_ip}:5555...")
+                print(f"[*] Dang ket noi toi IP Wi-Fi da nho: {saved_ip}:5555...")
                 res = run_adb("connect", f"{saved_ip}:5555")
                 print(res)
-                time.sleep(1)
+                time.sleep(0.5)
                 _, wifi_devs_after = get_devices()
                 if wifi_devs_after:
-                    target_serial = wifi_devs_after[0]
-                    mode = "WIFI"
-                    print(f"[v] Ket noi Wi-Fi thanh cong toi {target_serial}!\n")
+                    mode = "WI-FI"
+                    device_selector = ["-e"]
+                    print(f"[v] Ket noi Wi-Fi thanh cong toi {wifi_devs_after[0]}!\n")
 
     # --- KỊCH BẢN 3: CHƯA THẤY CẢ HAI -> HƯỚNG DẪN HOẶC NHẬP IP ---
-    if not target_serial:
+    if not device_selector:
         print("\n" + "=" * 60)
         print(" [!] CHUA THE KET NOI DEN DIEN THOAI")
         print("=" * 60)
@@ -145,12 +145,12 @@ def main():
             time.sleep(1)
             _, wifi_devs_manual = get_devices()
             if wifi_devs_manual:
-                target_serial = wifi_devs_manual[0]
-                mode = "WIFI"
+                mode = "WI-FI"
+                device_selector = ["-e"]
                 save_wifi_ip(user_ip)
-                print(f"[v] Ket noi thanh cong toi {target_serial}!\n")
+                print(f"[v] Ket noi thanh cong!\n")
             else:
-                print("[!] Khong the ket noi toi IP nay. Vui long kiem tra lai.")
+                print("[!] Khong the ket noi toi IP nay.")
                 input("Nhan Enter de thoat...")
                 return 1
         else:
@@ -178,7 +178,7 @@ def main():
 
     scrcpy_args = [
         scrcpy_exe,
-        "-s", target_serial,
+    ] + device_selector + [
         "--window-title", "Appcuatao",
         "--video-codec=h265",
         "--video-bit-rate=24M",
@@ -192,7 +192,7 @@ def main():
         "--stay-awake"
     ]
 
-    print(f"[*] Dang phan chieu man hinh ({mode}: {target_serial})...")
+    print(f"[*] Dang phan chieu man hinh ({mode})...")
     scrcpy_proc = subprocess.run(scrcpy_args)
 
     # 3. Dọn dẹp sau khi scrcpy đóng
