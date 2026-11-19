@@ -1,7 +1,7 @@
 @echo off
 title Appcuatao
 
-set "PATH=C:\Users\Admin\AppData\Local\Android\Sdk\platform-tools;%PATH%"
+set "PATH=C:\Users\Admin\AppData\Local\Android\Sdk\platform-tools;C:\Users\Admin\scoop\shims;%PATH%"
 
 set "PY_EXE=pythonw"
 if exist "%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe" (
