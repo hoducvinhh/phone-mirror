@@ -6,3 +6,4 @@ build/
 *.jar
 __pycache__/
 *.pyc
+.last_wifi_ip.txt
