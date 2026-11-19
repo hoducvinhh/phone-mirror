@@ -1,6 +1,6 @@
 """
 Appcuatao Docked Ribbon - Thanh tien ich co dinh gan chat vao cua so phan chieu
-Tu dong tat ngay lap tuc 100% khi dong app, khong bao gio bi dinh lai man hinh.
+Tu dong bam chat 100% vao mep phai cua so dien thoai, dong bo vi tri lien tuc.
 """
 import ctypes
 from ctypes import wintypes
@@ -128,10 +128,11 @@ class AppcuataoDockedBar:
                 return h
         except Exception:
             pass
-        return self.root.winfo_id()
+        top = user32.GetParent(self.root.winfo_id())
+        return top if top else self.root.winfo_id()
 
     def exit_app(self):
-        """Dong hoan toan ung dung ngay lap tuc, khong de lai tien trinh ma"""
+        """Đóng hoàn toàn ứng dụng ngay lập tức, không để lại tiến trình ma"""
         try:
             self.root.destroy()
         except Exception:
@@ -139,8 +140,7 @@ class AppcuataoDockedBar:
         os._exit(0)
 
     def close_all(self):
-        """Nguoi dung bam nut X tren thanh cong cu de thoat ca app"""
-        # Tat scrcpy neu con chay
+        """Người dùng bấm nút X trên thanh công cụ để thoát cả app"""
         if self.scrcpy_pid:
             subprocess.Popen(["taskkill", "/F", "/PID", str(self.scrcpy_pid)],
                              creationflags=0x08000000)
@@ -252,20 +252,36 @@ class AppcuataoDockedBar:
         return name, pid.value
 
     def find_target_window(self):
-        """Chi tim dung cua so thuoc ve tien trinh scrcpy.exe, khong bao gio nhan nham trinh duyet hay editor"""
+        """Tìm chính xác cửa sổ scrcpy hiển thị màn hình Appcuatao"""
+        # 1. Thử FindWindow chính xác
+        hwnd = user32.FindWindowW(None, "Appcuatao")
+        if hwnd and user32.IsWindowVisible(hwnd):
+            proc_name, pid = self.get_process_image_name(hwnd)
+            if proc_name == "scrcpy.exe":
+                r = wintypes.RECT()
+                user32.GetWindowRect(hwnd, ctypes.byref(r))
+                if r.right - r.left > 100:  # Không phải cửa sổ rỗng
+                    return hwnd, pid
+
+        # 2. Quét qua EnumWindows
         candidates = []
         def enum_cb(h, extra):
             if h == self.my_hwnd or not user32.IsWindowVisible(h):
                 return True
             proc_name, pid = self.get_process_image_name(h)
             if proc_name == "scrcpy.exe":
-                length = user32.GetWindowTextLengthW(h)
-                if length > 0:
-                    buff = ctypes.create_unicode_buffer(length + 1)
-                    user32.GetWindowTextW(h, buff, length + 1)
-                    title = buff.value
-                    if "Appcuatao" in title or title == "scrcpy":
-                        candidates.append((h, pid))
+                r = wintypes.RECT()
+                user32.GetWindowRect(h, ctypes.byref(r))
+                w = r.right - r.left
+                h_val = r.bottom - r.top
+                if w > 100 and h_val > 100:  # Chỉ lấy cửa sổ hiển thị thực sự
+                    length = user32.GetWindowTextLengthW(h)
+                    if length > 0:
+                        buff = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(h, buff, length + 1)
+                        title = buff.value
+                        if "Appcuatao" in title or title == "scrcpy":
+                            candidates.append((h, pid))
             return True
 
         CMPFUNC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
@@ -300,7 +316,7 @@ class AppcuataoDockedBar:
 
         left, top, right, bottom = self.get_bounds(self.scrcpy_hwnd)
         h = bottom - top
-        if h <= 0:
+        if h <= 0 or right <= left:
             return
 
         curr_box = (left, top, right, bottom)
@@ -314,9 +330,8 @@ class AppcuataoDockedBar:
         bar_w = self.bar_width
         bar_h = h
 
-        bar_hwnd = self.my_hwnd or self.root.winfo_id()
-        user32.SetWindowPos(bar_hwnd, HWND_TOPMOST, bar_x, bar_y, bar_w, bar_h,
-                            SWP_NOACTIVATE | SWP_SHOWWINDOW)
+        # Đặt vị trí chính xác bằng geometry của Tkinter
+        self.root.geometry(f"{bar_w}x{bar_h}+{bar_x}+{bar_y}")
 
     def check_loop(self):
         # 1. Kiểm tra tiến trình scrcpy nếu đã từng kết nối
@@ -354,7 +369,7 @@ class AppcuataoDockedBar:
                 self.sync_position(force=True)
             else:
                 self.wait_count += 1
-                if self.wait_count > 250:  # Chờ quá 12s không thấy scrcpy -> tự hủy
+                if self.wait_count > 300:  # Quá 15s không thấy scrcpy -> tự hủy
                     self.exit_app()
                     return
 
