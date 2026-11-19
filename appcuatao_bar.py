@@ -5,7 +5,6 @@ import ctypes
 from ctypes import wintypes
 import os
 import subprocess
-import sys
 import time
 import tkinter as tk
 
@@ -20,104 +19,86 @@ KEYEVENTF_KEYUP = 0x0002
 SWP_NOZORDER = 0x0004
 SWP_NOACTIVATE = 0x0010
 
-class ToolTip:
-    def __init__(self, widget, text):
-        self.widget = widget
-        self.text = text
-        self.tip_window = None
-        self.widget.bind("<Enter>", self.show_tip)
-        self.widget.bind("<Leave>", self.hide_tip)
-
-    def show_tip(self, event=None):
-        if self.tip_window or not self.text:
-            return
-        x = self.widget.winfo_rootx() + self.widget.winfo_width() + 6
-        y = self.widget.winfo_rooty()
-        self.tip_window = tw = tk.Toplevel(self.widget)
-        tw.wm_overrideredirect(True)
-        tw.wm_attributes("-topmost", True)
-        tw.geometry(f"+{x}+{y}")
-        label = tk.Label(tw, text=self.text, justify=tk.LEFT,
-                         background="#2b2d42", foreground="#edf2f4",
-                         relief=tk.SOLID, borderwidth=1,
-                         font=("Segoe UI", 9, "normal"), padx=8, pady=4)
-        label.pack()
-
-    def hide_tip(self, event=None):
-        if self.tip_window:
-            self.tip_window.destroy()
-            self.tip_window = None
-
 class AppcuataoBar:
     def __init__(self, root):
         self.root = root
-        self.root.title("AppcuataoBar")
+        self.root.title("Tiện ích")
+        self.root.attributes("-toolwindow", True)
         self.root.attributes("-topmost", True)
-        self.root.configure(bg="#181825")
-        self.root.overrideredirect(True)
+        self.root.configure(bg="#1e1e2e")
+        self.root.resizable(False, False)
 
         self.side = "right"  # "right" hoặc "left"
-        self.bar_width = 48
+        self.bar_width = 105
+        self.bar_height = 560
         self.scrcpy_hwnd = None
         self.has_connected = False
         self.missing_count = 0
         self.last_rect = None
 
-        # Đặt vị trí mặc định ban đầu ở giữa bên phải màn hình để luôn nhìn thấy
+        # Vị trí mặc định ở cạnh phải màn hình
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
-        init_x = screen_w - self.bar_width - 20
-        init_y = max(50, (screen_h - 520) // 2)
-        self.root.geometry(f"{self.bar_width}x520+{init_x}+{init_y}")
+        init_x = screen_w - self.bar_width - 30
+        init_y = max(40, (screen_h - self.bar_height) // 2)
+        self.root.geometry(f"{self.bar_width}x{self.bar_height}+{init_x}+{init_y}")
 
         self.build_ui()
         self.root.update()
         self.check_window_loop()
 
     def build_ui(self):
-        # Nút đổi vị trí (Trái / Phải)
-        self.btn_side = self.create_btn("⇄", self.toggle_side, "Đổi thanh sang bên Trái / Phải", bg="#313244", fg="#89b4fa")
-        self.btn_side.pack(pady=(4, 4), padx=3, fill=tk.X)
+        # Header / Nút đổi bên
+        self.btn_side = tk.Button(self.root, text="⇄ Đổi bên", command=self.toggle_side,
+                                  font=("Segoe UI", 9, "bold"), bg="#313244", fg="#89b4fa",
+                                  activebackground="#45475a", activeforeground="#ffffff",
+                                  relief=tk.FLAT, bd=0, height=1, cursor="hand2")
+        self.btn_side.pack(pady=(4, 2), padx=4, fill=tk.X)
+
+        sep0 = tk.Frame(self.root, height=1, bg="#45475a")
+        sep0.pack(fill=tk.X, padx=4, pady=2)
+
+        # Nhóm chỉnh kích cỡ độc lập (Yêu cầu chính của người dùng)
+        lbl_size = tk.Label(self.root, text="KÍCH CỠ", font=("Segoe UI", 8, "bold"),
+                            bg="#1e1e2e", fg="#a6adc8")
+        lbl_size.pack(pady=(1, 1))
+
+        self.create_btn("↔+ Rộng", self.cmd_widen, bg="#181825", fg="#a6e3a1")
+        self.create_btn("↔- Hẹp", self.cmd_narrow, bg="#181825", fg="#f38ba8")
+        self.create_btn("↕+ Cao", self.cmd_heighten, bg="#181825", fg="#a6e3a1")
+        self.create_btn("↕- Thấp", self.cmd_shorten, bg="#181825", fg="#f38ba8")
+        self.create_btn("📐 Căn vừa", self.cmd_fit, bg="#313244", fg="#f9e2af")
 
         sep1 = tk.Frame(self.root, height=1, bg="#45475a")
-        sep1.pack(fill=tk.X, padx=4, pady=2)
+        sep1.pack(fill=tk.X, padx=4, pady=3)
 
-        # Nhóm điều hướng
-        self.create_btn("🔙", self.cmd_back, "Quay lại (Back)").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("🏠", self.cmd_home, "Màn hình chính (Home)").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("📑", self.cmd_recent, "Đa nhiệm (Recent Apps)").pack(pady=1, padx=3, fill=tk.X)
+        # Nhóm hiển thị & giải trí
+        lbl_view = tk.Label(self.root, text="XEM PHIM", font=("Segoe UI", 8, "bold"),
+                            bg="#1e1e2e", fg="#a6adc8")
+        lbl_view.pack(pady=(1, 1))
+
+        self.create_btn("🔄 Xoay", self.cmd_rotate, bg="#181825", fg="#89dceb")
+        self.create_btn("🔲 Toàn màn", self.cmd_fullscreen, bg="#181825", fg="#cba6f7")
 
         sep2 = tk.Frame(self.root, height=1, bg="#45475a")
         sep2.pack(fill=tk.X, padx=4, pady=3)
 
-        # Nhóm chỉnh kích thước tự do theo yêu cầu người dùng
-        # Giữ nguyên cao, kéo dài rộng; giữ nguyên rộng, kéo dài cao
-        self.create_btn("↔+", self.cmd_widen, "Kéo dài CHIỀU NGANG (Giữ nguyên chiều cao)", bg="#1e1e2e", fg="#a6e3a1").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("↔-", self.cmd_narrow, "Thu hẹp CHIỀU NGANG (Giữ nguyên chiều cao)", bg="#1e1e2e", fg="#f38ba8").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("↕+", self.cmd_heighten, "Kéo dài CHIỀU CAO (Giữ nguyên chiều ngang)", bg="#1e1e2e", fg="#a6e3a1").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("↕-", self.cmd_shorten, "Thu gọn CHIỀU CAO (Giữ nguyên chiều ngang)", bg="#1e1e2e", fg="#f38ba8").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("📐", self.cmd_fit, "Căn vừa khít / Xóa sạch viền đen (Alt + W)").pack(pady=1, padx=3, fill=tk.X)
+        # Nhóm điều hướng
+        lbl_nav = tk.Label(self.root, text="ĐIỀU HƯỚNG", font=("Segoe UI", 8, "bold"),
+                           bg="#1e1e2e", fg="#a6adc8")
+        lbl_nav.pack(pady=(1, 1))
 
-        sep3 = tk.Frame(self.root, height=1, bg="#45475a")
-        sep3.pack(fill=tk.X, padx=4, pady=3)
+        self.create_btn("🔙 Quay lại", self.cmd_back)
+        self.create_btn("🏠 Home", self.cmd_home)
+        self.create_btn("📑 Đa nhiệm", self.cmd_recent)
+        self.create_btn("⚡ Tắt màn đt", self.cmd_power, bg="#181825", fg="#fab387")
 
-        # Nhóm hiển thị & giải trí
-        self.create_btn("🔄", self.cmd_rotate, "Xoay ngang màn hình xem phim (Alt + R)").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("🔲", self.cmd_fullscreen, "Toàn màn hình (F11)").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("🔊", self.cmd_vol_up, "Tăng âm lượng").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("🔉", self.cmd_vol_down, "Giảm âm lượng").pack(pady=1, padx=3, fill=tk.X)
-        self.create_btn("⚡", self.cmd_power, "Tắt/Bật màn hình điện thoại").pack(pady=1, padx=3, fill=tk.X)
-
-        sep4 = tk.Frame(self.root, height=1, bg="#45475a")
-        sep4.pack(fill=tk.X, padx=4, pady=3)
-        self.create_btn("✕", self.root.destroy, "Đóng thanh công cụ", bg="#f38ba8", fg="#11111b").pack(pady=(1, 4), padx=3, fill=tk.X)
-
-    def create_btn(self, icon, command, tooltip, bg="#1e1e2e", fg="#cdd6f4"):
-        btn = tk.Button(self.root, text=icon, command=command,
-                        font=("Segoe UI", 10, "bold"),
-                        bg=bg, fg=fg, activebackground="#585b70", activeforeground="#ffffff",
-                        relief=tk.FLAT, bd=0, width=3, height=1, cursor="hand2")
-        ToolTip(btn, tooltip)
+    def create_btn(self, text, command, bg="#181825", fg="#cdd6f4"):
+        btn = tk.Button(self.root, text=text, command=command,
+                        font=("Segoe UI", 9, "normal"),
+                        bg=bg, fg=fg, activebackground="#45475a", activeforeground="#ffffff",
+                        relief=tk.FLAT, bd=0, height=1, cursor="hand2", anchor="w", padx=8)
+        btn.pack(pady=1, padx=4, fill=tk.X)
         return btn
 
     def toggle_side(self):
@@ -125,20 +106,26 @@ class AppcuataoBar:
         self.sync_position(force=True)
 
     def find_target_window(self):
+        # 1. Thử tìm chính xác theo tiêu đề
+        hwnd = user32.FindWindowW(None, "Appcuatao")
+        if hwnd and user32.IsWindowVisible(hwnd):
+            return hwnd
+
+        # 2. Quét các cửa sổ chứa chữ Appcuatao hoặc scrcpy
         hwnds = []
-        def enum_windows_callback(hwnd, lParam):
-            if user32.IsWindowVisible(hwnd):
-                length = user32.GetWindowTextLengthW(hwnd)
+        def enum_cb(h, extra):
+            if user32.IsWindowVisible(h):
+                length = user32.GetWindowTextLengthW(h)
                 if length > 0:
                     buff = ctypes.create_unicode_buffer(length + 1)
-                    user32.GetWindowTextW(hwnd, buff, length + 1)
+                    user32.GetWindowTextW(h, buff, length + 1)
                     title = buff.value
                     if "Appcuatao" in title or "scrcpy" in title.lower():
-                        hwnds.append(hwnd)
+                        hwnds.append(h)
             return True
 
         CMPFUNC = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
-        user32.EnumWindows(CMPFUNC(enum_windows_callback), 0)
+        user32.EnumWindows(CMPFUNC(enum_cb), 0)
         return hwnds[0] if hwnds else None
 
     def sync_position(self, force=False):
@@ -161,32 +148,29 @@ class AppcuataoBar:
         else:
             self.root.deiconify()
 
-        # Tính vị trí dính vào cạnh cửa sổ điện thoại
+        # Đặt thanh công cụ dính ngay sát mép cửa sổ phản chiếu
         if self.side == "right":
-            bar_x = rect.right + 2
+            bar_x = rect.right + 4
         else:
-            bar_x = rect.left - self.bar_width - 2
+            bar_x = rect.left - self.bar_width - 8
 
         bar_y = rect.top
-        self.root.geometry(f"{self.bar_width}x520+{bar_x}+{bar_y}")
+        self.root.geometry(f"{self.bar_width}x{self.bar_height}+{bar_x}+{bar_y}")
 
     def check_window_loop(self):
-        if not self.scrcpy_hwnd or not user32.IsWindow(self.scrcpy_hwnd):
-            found = self.find_target_window()
-            if found:
-                self.scrcpy_hwnd = found
-                self.has_connected = True
-                self.missing_count = 0
-                self.sync_position(force=True)
-            else:
-                if self.has_connected:
-                    self.missing_count += 1
-                    # Chỉ tự đóng sau khi cửa sổ đã từng mở và giờ bị đóng quá 40 ticks (~4 giây)
-                    if self.missing_count > 40:
-                        self.root.destroy()
-                        return
-        else:
+        found = self.find_target_window()
+        if found:
+            self.scrcpy_hwnd = found
+            self.has_connected = True
+            self.missing_count = 0
             self.sync_position()
+        else:
+            if self.has_connected:
+                self.missing_count += 1
+                # Nếu cửa sổ mirror đã đóng quá 5 giây thì đóng thanh công cụ
+                if self.missing_count > 50:
+                    self.root.destroy()
+                    return
 
         self.root.after(100, self.check_window_loop)
 
@@ -270,12 +254,6 @@ class AppcuataoBar:
 
     def cmd_recent(self):
         self.run_adb("shell", "input", "keyevent", "187")
-
-    def cmd_vol_up(self):
-        self.run_adb("shell", "input", "keyevent", "24")
-
-    def cmd_vol_down(self):
-        self.run_adb("shell", "input", "keyevent", "25")
 
     def cmd_power(self):
         self.run_adb("shell", "input", "keyevent", "26")
