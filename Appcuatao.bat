@@ -10,7 +10,7 @@ if exist "%LOCALAPPDATA%\Programs\Python\Python314\pythonw.exe" (
 
 start "" "%PY_EXE%" "%~dp0appcuatao_bar.py"
 
-scrcpy --window-title "Appcuatao" --no-window-aspect-ratio-lock --stay-awake --max-fps 60
+scrcpy --window-title "Appcuatao" --video-codec=h265 --video-bit-rate=24M --max-size=1920 --video-buffer=0 --audio-buffer=20 --max-fps=60 --window-x 160 --window-y 60 --no-window-aspect-ratio-lock --stay-awake
 
 if %ERRORLEVEL% equ 0 goto :end
 

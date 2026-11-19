@@ -1,6 +1,6 @@
 """
-Appcuatao Docked Ribbon - Thanh tien ich gan lien cua so phan chieu dien thoai
-Khong lam den man hinh, khong lam roi loan do hoa Direct3D 11 / SDL3.
+Appcuatao Docked Ribbon - Thanh tien ich co dinh gan chat vao cua so phan chieu
+Toi uu hoa toc do phan hoi, khong nhay vi tri, dinh chat vao mep phai cua so.
 """
 import ctypes
 from ctypes import wintypes
@@ -10,7 +10,7 @@ import subprocess
 import time
 import tkinter as tk
 
-# Enable Per-Monitor DPI Awareness
+# Set Per-Monitor DPI Awareness
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 except Exception:
@@ -28,11 +28,10 @@ VK_W = 0x57          # W
 VK_R = 0x52          # R
 VK_F11 = 0x7A        # F11
 KEYEVENTF_KEYUP = 0x0002
-SWP_NOSIZE = 0x0001
-SWP_NOMOVE = 0x0002
 SWP_NOZORDER = 0x0004
 SWP_NOACTIVATE = 0x0010
 SWP_SHOWWINDOW = 0x0040
+HWND_TOPMOST = -1
 GWLP_HWNDPARENT = -8
 
 class ToolTip:
@@ -50,7 +49,6 @@ class ToolTip:
         if not text:
             return
 
-        # Tự động tính toán vị trí tooltip để không bị tràn ra ngoài màn hình
         self.tip_window = tw = tk.Toplevel(self.widget)
         tw.wm_overrideredirect(True)
         tw.wm_attributes("-topmost", True)
@@ -93,18 +91,18 @@ class AppcuataoDockedBar:
         self.root.attributes("-topmost", True)
         self.root.configure(bg="#11111b")
 
+        # Cố định luôn bên phải (Fixed cứng, không bị nhảy loạn)
         self.bar_width = 44
-        self.side = "right"  # "right" hoac "left"
         self.scrcpy_hwnd = None
         self.my_hwnd = None
         self.has_connected = False
         self.missing_count = 0
         self.wait_count = 0
         self.last_box = None
-        self.is_hidden = False
+        self.is_hidden = True
         self.is_landscape = False
 
-        # Biến hỗ trợ kéo thả cả cửa sổ bằng thanh công cụ
+        # Biến kéo thả cả cửa sổ bằng grip
         self._drag_start_x = 0
         self._drag_start_y = 0
         self._scrcpy_start_x = 0
@@ -112,8 +110,8 @@ class AppcuataoDockedBar:
         self._scrcpy_start_w = 0
         self._scrcpy_start_h = 0
 
-        # An ban dau
-        self.root.geometry(f"{self.bar_width}x500+-2000+-2000")
+        # Ban đầu ẩn hoàn toàn cho đến khi phát hiện thấy cửa sổ Appcuatao
+        self.root.withdraw()
 
         self.build_ui()
         self.root.update_idletasks()
@@ -131,37 +129,32 @@ class AppcuataoDockedBar:
         return self.root.winfo_id()
 
     def build_ui(self):
-        # 1. Header Grip / Keo ca cum cua so
+        # 1. Grip kéo di chuyển toàn bộ cụm cửa sổ
         self.grip = tk.Label(self.root, text="⠿", font=("Segoe UI", 11, "bold"),
-                             bg="#1e1e2e", fg="#6c7086", cursor="fleur", height=1)
+                             bg="#1e1e2e", fg="#89b4fa", cursor="fleur", height=1)
         self.grip.pack(fill=tk.X, pady=(0, 2))
         self.grip.bind("<Button-1>", self.on_drag_start)
         self.grip.bind("<B1-Motion>", self.on_drag_motion)
-        ToolTip(self.grip, "Giữ chuột kéo để di chuyển cả cửa sổ Appcuatao")
+        ToolTip(self.grip, "Giữ chuột kéo để di chuyển cả cụm cửa sổ Appcuatao")
 
-        # 2. Đổi bên Trái / Phải
-        self.create_btn("⇄", self.toggle_side, "Đổi thanh công cụ sang bên Trái / Phải", fg="#89b4fa")
-
-        self.add_sep()
-
-        # 3. Xoay màn hình (Yêu cầu chính: xem phim 16:9 / dọc)
+        # 2. Xoay màn hình (16:9 xem phim / xoay dọc)
         self.btn_rot = self.create_btn("🔄", self.toggle_rotation,
                                       lambda: "Đang xem ngang -> Bấm để Xoay Dọc" if self.is_landscape else "Bấm để Xoay Ngang xem phim (16:9)",
                                       fg="#89dceb")
 
         self.add_sep()
 
-        # 4. Chỉnh kích cỡ độc lập (Yêu cầu chính của người dùng)
+        # 3. Chỉnh kích cỡ độc lập (Rộng / Hẹp / Cao / Thấp / Căn vừa / Toàn màn)
         self.create_btn("↔+", self.cmd_widen, "Kéo dài chiều ngang (+50px, giữ nguyên cao)", fg="#a6e3a1")
         self.create_btn("↔-", self.cmd_narrow, "Thu hẹp chiều ngang (-50px, giữ nguyên cao)", fg="#f38ba8")
         self.create_btn("↕+", self.cmd_heighten, "Kéo dài chiều cao (+50px, giữ nguyên ngang)", fg="#a6e3a1")
         self.create_btn("↕-", self.cmd_shorten, "Thu gọn chiều cao (-50px, giữ nguyên ngang)", fg="#f38ba8")
-        self.create_btn("📐", self.cmd_fit, "Căn vừa chuẩn tỷ lệ / Xóa sạch viền đen (Alt + W)", fg="#f9e2af")
+        self.create_btn("📐", self.cmd_fit, "Căn vừa chuẩn tỷ lệ / Xóa viền đen (Alt + W)", fg="#f9e2af")
         self.create_btn("🔲", self.cmd_fullscreen, "Bật/Tắt Toàn màn hình xem phim (F11)", fg="#cba6f7")
 
         self.add_sep()
 
-        # 5. Phím điều hướng Android
+        # 4. Phím điều hướng Android
         self.create_btn("🔙", self.cmd_back, "Quay lại (Back / Chuột phải)")
         self.create_btn("🏠", self.cmd_home, "Màn hình chính (Home / Con lăn)")
         self.create_btn("📑", self.cmd_recent, "Đa nhiệm (Recent Apps)")
@@ -208,7 +201,7 @@ class AppcuataoDockedBar:
     def send_scrcpy_hotkey(self, mod_key, key):
         if self.scrcpy_hwnd and user32.IsWindow(self.scrcpy_hwnd):
             user32.SetForegroundWindow(self.scrcpy_hwnd)
-            time.sleep(0.02)
+            time.sleep(0.015)
             if mod_key:
                 user32.keybd_event(mod_key, 0, 0, 0)
             user32.keybd_event(key, 0, 0, 0)
@@ -217,12 +210,12 @@ class AppcuataoDockedBar:
                 user32.keybd_event(mod_key, 0, KEYEVENTF_KEYUP, 0)
 
     def find_target_window(self):
-        # 1. Tim window co title Appcuatao chinh xac
+        # 1. Tìm cửa sổ Appcuatao chính xác
         hwnd = user32.FindWindowW(None, "Appcuatao")
         if hwnd and user32.IsWindowVisible(hwnd) and hwnd != self.my_hwnd:
             return hwnd
 
-        # 2. Quét các cửa sổ nhưng loại trừ chính toolbar
+        # 2. Tìm qua EnumWindows nếu tiêu đề có tiền tố
         candidates = []
         def enum_cb(h, extra):
             if h == self.my_hwnd or not user32.IsWindowVisible(h):
@@ -258,6 +251,7 @@ class AppcuataoDockedBar:
         if not self.scrcpy_hwnd or not user32.IsWindow(self.scrcpy_hwnd):
             return
 
+        # Nếu cửa sổ Appcuatao thu nhỏ thì ẩn thanh công cụ
         if user32.IsIconic(self.scrcpy_hwnd):
             if not self.is_hidden:
                 self.root.withdraw()
@@ -273,21 +267,21 @@ class AppcuataoDockedBar:
         if h <= 0:
             return
 
-        curr_box = (left, top, right, bottom, self.side)
+        curr_box = (left, top, right, bottom)
         if not force and curr_box == self.last_box:
             return
         self.last_box = curr_box
 
+        # CỐ ĐỊNH CỨNG LUÔN Ở MÉP PHẢI CỬA SỔ
+        bar_x = right
+        bar_y = top
         bar_w = self.bar_width
         bar_h = h
 
-        if self.side == "right":
-            bar_x = right
-        else:
-            bar_x = left - bar_w
-        bar_y = top
-
-        self.root.geometry(f"{bar_w}x{bar_h}+{bar_x}+{bar_y}")
+        # Đặt vị trí tức thì bằng Win32 SetWindowPos siêu tốc (không trễ)
+        bar_hwnd = self.my_hwnd or self.root.winfo_id()
+        user32.SetWindowPos(bar_hwnd, HWND_TOPMOST, bar_x, bar_y, bar_w, bar_h,
+                            SWP_NOACTIVATE | SWP_SHOWWINDOW)
 
     def check_loop(self):
         found = self.find_target_window()
@@ -295,7 +289,7 @@ class AppcuataoDockedBar:
             if not self.has_connected:
                 self.has_connected = True
                 self.scrcpy_hwnd = found
-                # Thiết lập quan hệ sở hữu để cửa sổ luôn gắn liền
+                # Thiết lập ownership
                 try:
                     bar_h = self.my_hwnd or self.root.winfo_id()
                     user32.SetWindowLongPtrW(bar_h, GWLP_HWNDPARENT, found)
@@ -307,18 +301,18 @@ class AppcuataoDockedBar:
         else:
             if self.has_connected:
                 self.missing_count += 1
-                if self.missing_count > 25:  # Scrcpy đã đóng
+                if self.missing_count > 25:  # Scrcpy đã đóng -> đóng bar
                     self.root.destroy()
                     return
             else:
                 self.wait_count += 1
-                if self.wait_count > 350:  # Chờ quá 14s không mở thì thoát
+                if self.wait_count > 300:  # Quá 15 giây không mở -> đóng
                     self.root.destroy()
                     return
 
-        self.root.after(20, self.check_loop)
+        self.root.after(16, self.check_loop)
 
-    # --- Kéo di chuyển toàn bộ cửa sổ ---
+    # --- Kéo di chuyển toàn bộ cụm cửa sổ ---
     def on_drag_start(self, event):
         self._drag_start_x = event.x_root
         self._drag_start_y = event.y_root
@@ -342,12 +336,7 @@ class AppcuataoDockedBar:
                             SWP_NOZORDER | SWP_NOACTIVATE)
         self.sync_position(force=True)
 
-    # --- Đổi bên Trái / Phải ---
-    def toggle_side(self):
-        self.side = "left" if self.side == "right" else "right"
-        self.sync_position(force=True)
-
-    # --- Xoay ngang màn hình (Xem phim 16:9 / Xoay dọc) ---
+    # --- Xoay ngang màn hình (Tự động mở rộng từ TÂM, KHÔNG NHẢY VỊ TRÍ) ---
     def toggle_rotation(self):
         self.is_landscape = not self.is_landscape
         screen_w = self.root.winfo_screenwidth()
@@ -370,10 +359,16 @@ class AppcuataoDockedBar:
 
         if self.scrcpy_hwnd and user32.IsWindow(self.scrcpy_hwnd):
             left, top, right, bottom = self.get_bounds(self.scrcpy_hwnd)
-            new_x = min(left, screen_w - target_w - self.bar_width - 30)
-            new_x = max(20, new_x)
-            new_y = min(top, screen_h - target_h - 40)
-            new_y = max(20, new_y)
+            # Cố định trọng tâm: giữ nguyên tâm cửa sổ thay vì dịch sang mép
+            center_x = (left + right) // 2
+            center_y = (top + bottom) // 2
+
+            new_x = center_x - target_w // 2
+            new_y = center_y - target_h // 2
+
+            # Đảm bảo không vượt ra ngoài màn hình
+            new_x = max(10, min(new_x, screen_w - target_w - self.bar_width - 15))
+            new_y = max(10, min(new_y, screen_h - target_h - 40))
 
             user32.SetWindowPos(self.scrcpy_hwnd, 0, new_x, new_y, target_w, target_h,
                                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW)
