@@ -1,6 +1,6 @@
-# Appcuatao — Hướng Dẫn Sử Dụng Chi Tiết
+# Longtoitannatnhanratoilagay — Hướng Dẫn Sử Dụng Chi Tiết
 
-**Appcuatao** là công cụ phản chiếu (mirror) và điều khiển toàn diện màn hình điện thoại Android lên máy tính Windows. 
+**Longtoitannatnhanratoilagay** là công cụ phản chiếu (mirror) và điều khiển toàn diện màn hình điện thoại Android lên máy tính Windows. 
 
 Ứng dụng phục vụ đa mục đích:
 - **Giải trí hàng ngày:** Xem phim, lướt TikTok, xem YouTube, chơi game trên màn hình lớn của laptop/máy tính với âm thanh phát trực tiếp qua loa máy tính.
@@ -16,10 +16,11 @@
 2. **Siêu nhẹ & Mượt mà:**
    - Tiêu tốn cực ít tài nguyên (chỉ chiếm ~35MB RAM, CPU ~1-2%).
    - Tốc độ khung hình 60 FPS, độ trễ phản hồi siêu thấp (< 25ms, nhanh hơn máy ảo Android Studio).
-3. **Thanh công cụ bên cạnh (Sidebar) tiện lợi:**
-   - Đầy đủ các nút điều hướng (Back, Home, Đa nhiệm, Xoay ngang, Căn vừa khít, Toàn màn hình...).
-   - Hỗ trợ đổi vị trí thanh công cụ sang **bên Trái** hoặc **bên Phải** tùy thói quen.
+3. **Thanh công cụ gắn cố định (Docked Ribbon) tiện lợi:**
+   - Đầy đủ các nút điều hướng (Back, Home, Đa nhiệm, Xoay ngang 16:9, Căn vừa khít, Toàn màn hình...).
+   - Tự động bám dính sát mép phải cửa sổ điện thoại, di chuyển đồng bộ, tắt app là tự đóng tức thì.
 4. **Truyền tải âm thanh:** Tự động phát tiếng từ điện thoại qua hệ thống loa của laptop/máy tính.
+5. **Hỗ trợ 2 chế độ thông minh:** Tự động ưu tiên cáp USB khi cắm, tự động chuyển sang Wi-Fi không dây khi rút cáp.
 
 ---
 
@@ -45,38 +46,35 @@
 
 Mỗi khi muốn phản chiếu màn hình điện thoại lên máy tính, bạn chỉ cần:
 
-1. Cắm cáp USB nối điện thoại với máy tính.
+1. Cắm cáp USB nối điện thoại với máy tính (hoặc kết nối Wi-Fi).
 2. Mở thư mục dự án và **Click đúp vào file:**
-   👉 **`Appcuatao.bat`**
+   👉 **`Longtoitannatnhanratoilagay.bat`** *(hoặc `Appcuatao.bat`)*
 3. Cửa sổ màn hình điện thoại và thanh công cụ điều khiển sẽ tự động xuất hiện ngay lập tức!
 
 ---
 
 ## 🛠️ BƯỚC 3: Hướng Dẫn Sử Dụng & Thanh Công Cụ
 
-### 1. Thanh Công Cụ Tiện Ích (Sidebar)
+### 1. Thanh Công Cụ Tích Hợp Trực Tiếp (Docked Ribbon Liền Khối)
 
-Một thanh công cụ màu tối hiện đại sẽ tự động đính kèm ở cạnh cửa sổ điện thoại và di chuyển theo cửa sổ:
-
-### 1. Thanh Công Cụ Tích Hợp Trực Tiếp (Sidebar Liền Khối)
-
-Thanh công cụ được **gắn liền trực tiếp vào trong cùng một cửa sổ ứng dụng** (không bị tách rời thành cửa sổ riêng), di chuyển và co giãn mượt mà theo cửa sổ:
+Thanh công cụ được **gắn liền trực tiếp vào cạnh phải cửa sổ ứng dụng**, di chuyển đồng bộ theo cửa sổ:
 
 | Biểu tượng | Tên chức năng | Chi tiết |
 |:---:|:---|:---|
-| **⇄ Đổi bên** | **Đổi bên** | Chuyển thanh công cụ sang **bên Trái** hoặc **bên Phải** ngay trong cửa sổ |
-| **🔄 Xoay ngang** | **Xoay ngang màn hình** | Xoay điện thoại sang ngang và tự động mở rộng cửa sổ xem phim 16:9 |
-| **📱 Xoay dọc** | **Xoay dọc màn hình** | Xoay điện thoại trở lại dạng dọc bình thường |
-| **↔+ Rộng** | **Mở rộng chiều ngang** | Kéo dài chiều ngang (+60px) trong khi **giữ nguyên chiều cao** |
-| **↔- Hẹp** | **Thu hẹp chiều ngang** | Thu gọn chiều ngang (-60px) trong khi **giữ nguyên chiều cao** |
-| **↕+ Cao** | **Kéo dài chiều cao** | Kéo dài chiều cao (+60px) trong khi **giữ nguyên chiều ngang** |
-| **↕- Thấp** | **Thu gọn chiều cao** | Thu gọn chiều cao (-60px) trong khi **giữ nguyên chiều ngang** |
-| **📐 Căn vừa** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen, đưa về tỉ lệ chuẩn điện thoại |
-| **🔲 Toàn màn** | **Toàn màn hình** | Phóng to toàn bộ màn hình laptop để xem phim cực đã (F11) |
-| **🔙 Quay lại** | **Quay lại (Back)** | Tương đương nút Back trên điện thoại hoặc Click chuột phải |
-| **🏠 Home** | **Trang chủ (Home)** | Quay về màn hình chính hoặc Bấm con lăn chuột |
-| **📑 Đa nhiệm** | **Đa nhiệm** | Mở danh sách các ứng dụng đang chạy gần đây (Recent Apps) |
-| **⚡ Tắt màn đt** | **Tắt/Bật màn hình** | Tắt hoặc bật màn hình điện thoại vật lý (tiết kiệm pin & chống nóng) |
+| **⠿** | **Tay cầm di chuyển** | Giữ chuột trái kéo để di chuyển cả cụm cửa sổ |
+| **🔄 Xoay** | **Xoay ngang màn hình** | Xoay điện thoại sang ngang và tự động mở rộng cửa sổ xem phim 16:9 |
+| **↔+** | **Mở rộng chiều ngang** | Kéo dài chiều ngang (+50px) trong khi **giữ nguyên chiều cao** |
+| **↔-** | **Thu hẹp chiều ngang** | Thu gọn chiều ngang (-50px) trong khi **giữ nguyên chiều cao** |
+| **↕+** | **Kéo dài chiều cao** | Kéo dài chiều cao (+50px) trong khi **giữ nguyên chiều ngang** |
+| **↕-** | **Thu gọn chiều cao** | Thu gọn chiều cao (-50px) trong khi **giữ nguyên chiều ngang** |
+| **📐** | **Căn vừa khít** | Tự động loại bỏ hoàn toàn viền đen, đưa về tỉ lệ chuẩn điện thoại |
+| **🔲** | **Toàn màn hình** | Phóng to toàn bộ màn hình laptop để xem phim cực đã (F11) |
+| **🔙** | **Quay lại (Back)** | Tương đương nút Back trên điện thoại hoặc Click chuột phải |
+| **🏠** | **Trang chủ (Home)** | Quay về màn hình chính hoặc Bấm con lăn chuột |
+| **📑** | **Đa nhiệm** | Mở danh sách các ứng dụng đang chạy gần đây (Recent Apps) |
+| **⚡** | **Tắt màn đt** | Tắt hoặc bật màn hình điện thoại vật lý (tiết kiệm pin & chống nóng) |
+| **🔊 / 🔉** | **Âm lượng** | Tăng / Giảm âm lượng thiết bị |
+| **✖** | **Đóng ứng dụng** | Đóng hoàn toàn cả màn hình điện thoại lẫn thanh tiện ích |
 
 ---
 
@@ -112,12 +110,13 @@ Thanh công cụ được **gắn liền trực tiếp vào trong cùng một c�
 
 ## ❓ Câu Hỏi Thường Gặp & Xử Lý Sự Cố
 
-**1. Mở file `Appcuatao.bat` lên báo "CHƯA PHÁT HIỆN ĐIỆN THOẠI"?**
-* Kiểm tra lại cáp sạc USB xem đã cắm chắc chắn chưa (nên cắm trực tiếp vào cổng USB máy tính, tránh dùng hub lỏng).
+**1. Mở file `Longtoitannatnhanratoilagay.bat` lên báo "CHƯA THỂ KẾT NỐI ĐẾN ĐIỆN THOẠI"?**
+* Kiểm tra lại cáp sạc USB xem đã cắm chắc chắn chưa.
 * Mở khóa màn hình điện thoại xem có hiện bảng thông báo hỏi *"Cho phép gỡ lỗi USB từ máy tính này?"* không. Nếu có, hãy bấm **Cho phép**.
+* Nếu dùng không dây, hãy chạy file `Ket_Noi_Wifi.bat` để kích hoạt kết nối Wi-Fi lần đầu.
 
 **2. Nhìn thấy màn hình nhưng chuột không bấm được (click không ăn)?**
 * Thường xảy ra trên máy **Xiaomi / Redmi / POCO**: Bạn cần vào *Tùy chọn nhà phát triển* -> Bật mục **Gỡ lỗi USB (Cài đặt bảo mật)**.
 
 **3. Làm sao để phát âm thanh qua máy tính?**
-* Tính năng truyền âm thanh hoạt động tự động trên các thiết bị chạy Android 11 trở lên. Bạn chỉ cần cắm cáp và mở phim, âm thanh sẽ tự động phát ra loa ngoài của máy tính.
+* Tính năng truyền âm thanh hoạt động tự động trên các thiết bị chạy Android 11 trở lên. Bạn chỉ cần mở phim, âm thanh sẽ tự động phát ra loa ngoài của máy tính.

@@ -1,5 +1,5 @@
 @echo off
-title Appcuatao
+title Longtoitannatnhanratoilagay
 
 set "PATH=C:\Users\Admin\AppData\Local\Android\Sdk\platform-tools;C:\Users\Admin\scoop\shims;%PATH%"
 

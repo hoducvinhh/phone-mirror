@@ -1,5 +1,5 @@
 """
-Appcuatao Docked Ribbon - Thanh tien ich co dinh gan chat vao cua so phan chieu
+Longtoitannatnhanratoilagay Docked Ribbon - Thanh tien ich co dinh gan chat vao cua so phan chieu
 Tu dong bam chat 100% vao mep phai cua so dien thoai, dong bo vi tri lien tuc.
 """
 import ctypes
@@ -85,7 +85,7 @@ class ToolTip:
             self.tip_window = None
 
 class AppcuataoDockedBar:
-    BAR_TITLE = "__Appcuatao_Docked_Ribbon__"
+    BAR_TITLE = "__Longtoitannatnhanratoilagay_Docked_Ribbon__"
 
     def __init__(self, root):
         self.root = root
@@ -156,7 +156,7 @@ class AppcuataoDockedBar:
         self.grip.pack(fill=tk.X, pady=(0, 2))
         self.grip.bind("<Button-1>", self.on_drag_start)
         self.grip.bind("<B1-Motion>", self.on_drag_motion)
-        ToolTip(self.grip, "Giữ chuột kéo để di chuyển cả cụm cửa sổ Appcuatao")
+        ToolTip(self.grip, "Giữ chuột kéo để di chuyển cả cụm cửa sổ Longtoitannatnhanratoilagay")
 
         # 2. Xoay màn hình (16:9 xem phim / xoay dọc)
         self.btn_rot = self.create_btn("🔄", self.toggle_rotation,
@@ -186,7 +186,7 @@ class AppcuataoDockedBar:
         self.add_sep()
 
         # 5. Nút đóng thoát ứng dụng dứt điểm
-        self.create_btn("✖", self.close_all, "Đóng hoàn toàn Appcuatao", fg="#f38ba8")
+        self.create_btn("✖", self.close_all, "Đóng hoàn toàn Longtoitannatnhanratoilagay", fg="#f38ba8")
 
     def create_btn(self, icon, command, tooltip, fg="#cdd6f4"):
         def wrapper():
@@ -252,16 +252,17 @@ class AppcuataoDockedBar:
         return name, pid.value
 
     def find_target_window(self):
-        """Tìm chính xác cửa sổ scrcpy hiển thị màn hình Appcuatao"""
+        """Tìm chính xác cửa sổ scrcpy hiển thị màn hình Longtoitannatnhanratoilagay"""
         # 1. Thử FindWindow chính xác
-        hwnd = user32.FindWindowW(None, "Appcuatao")
-        if hwnd and user32.IsWindowVisible(hwnd):
-            proc_name, pid = self.get_process_image_name(hwnd)
-            if proc_name == "scrcpy.exe":
-                r = wintypes.RECT()
-                user32.GetWindowRect(hwnd, ctypes.byref(r))
-                if r.right - r.left > 100:  # Không phải cửa sổ rỗng
-                    return hwnd, pid
+        for target_title in ["Longtoitannatnhanratoilagay", "Appcuatao"]:
+            hwnd = user32.FindWindowW(None, target_title)
+            if hwnd and user32.IsWindowVisible(hwnd):
+                proc_name, pid = self.get_process_image_name(hwnd)
+                if proc_name == "scrcpy.exe":
+                    r = wintypes.RECT()
+                    user32.GetWindowRect(hwnd, ctypes.byref(r))
+                    if r.right - r.left > 100:
+                        return hwnd, pid
 
         # 2. Quét qua EnumWindows
         candidates = []
@@ -280,7 +281,7 @@ class AppcuataoDockedBar:
                         buff = ctypes.create_unicode_buffer(length + 1)
                         user32.GetWindowTextW(h, buff, length + 1)
                         title = buff.value
-                        if "Appcuatao" in title or title == "scrcpy":
+                        if "Longtoitannatnhanratoilagay" in title or "Appcuatao" in title or title == "scrcpy":
                             candidates.append((h, pid))
             return True
 

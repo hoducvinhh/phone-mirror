@@ -1,5 +1,5 @@
 @echo off
-title Appcuatao - Kich Hoat Ket Noi Wi-Fi
+title Longtoitannatnhanratoilagay - Kich Hoat Ket Noi Wi-Fi
 
 set "PATH=C:\Users\Admin\AppData\Local\Android\Sdk\platform-tools;C:\Users\Admin\scoop\shims;%PATH%"
 

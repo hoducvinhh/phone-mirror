@@ -1,5 +1,5 @@
 """
-Appcuatao - Script tự động kích hoạt kết nối Wi-Fi (Không dây)
+Longtoitannatnhanratoilagay - Script tự động kích hoạt kết nối Wi-Fi (Không dây)
 Tự động dò IP wlan0, mở cổng 5555, kết nối và lưu cấu hình.
 """
 import os
@@ -50,7 +50,7 @@ def get_phone_ip():
 
 def main():
     print("=" * 60)
-    print("   APPCUATAO - KET NOI KHONG DAY QUA WI-FI")
+    print("   LONGTOITANNATNHANRATOILAGAY - KET NOI KHONG DAY QUA WI-FI")
     print("=" * 60)
     print()
 
@@ -81,7 +81,7 @@ def main():
                     print(" [v] KET NOI WI-FI THANH CONG!")
                     print("========================================================")
                     print(f" Dia chi IP: {saved_ip}")
-                    print(" Gio ban co the mo Appcuatao.bat de su dung khong day!")
+                    print(" Gio ban co the mo Longtoitannatnhanratoilagay.bat de su dung khong day!")
                     print("========================================================")
                     return 0
 
@@ -133,8 +133,8 @@ def main():
         print("========================================================")
         print(f"   Dia chi IP dien thoai : {ip}")
         print("   BAY GIO BAN CO THE RUT CAP USB RA!")
-        print("   Tu nay chi can click dup vao Appcuatao.bat la se")
-        print("   tu dong bat khong day qua Wi-Fi!")
+        print("   Tu nay chi can click dup vao Longtoitannatnhanratoilagay.bat")
+        print("   la se tu dong bat khong day qua Wi-Fi!")
         print("========================================================")
         print()
         return 0

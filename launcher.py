@@ -1,5 +1,5 @@
 """
-Appcuatao Smart Launcher
+Longtoitannatnhanratoilagay Smart Launcher
 Tu dong nhan dien 2 che do:
 1. Uu tien tuyet doi CAP USB de dat do muot ma toi da (60 FPS, khong do tre).
 2. Neu khong thay cap USB -> Tu dong tim kiem va ket noi khong day qua WI-FI.
@@ -91,7 +91,7 @@ def query_phone_wifi_ip(serial):
 
 def main():
     print("=" * 60)
-    print("   APPCUATAO - SMART AUTO CONNECTION")
+    print("   LONGTOITANNATNHANRATOILAGAY - SMART AUTO CONNECTION")
     print("=" * 60)
 
     # Dọn dẹp các IP offline cũ nếu có
@@ -185,7 +185,7 @@ def main():
     if not os.path.exists(pyw_exe):
         pyw_exe = "pythonw"
 
-    print("[*] Dang khoi dong thanh tien ich Appcuatao...")
+    print("[*] Dang khoi dong thanh tien ich Longtoitannatnhanratoilagay...")
     subprocess.Popen([pyw_exe, bar_script])
 
     # 2. Khởi động scrcpy với đích đến chính xác
@@ -198,7 +198,7 @@ def main():
     scrcpy_args = [
         scrcpy_exe,
         "-s", target_serial,  # CHỈ ĐỊNH RÕ THIẾT BỊ NÀY, KHÔNG BAO GIỜ BỊ NHẦM LẪN
-        "--window-title", "Appcuatao",
+        "--window-title", "Longtoitannatnhanratoilagay",
         "--video-codec=h265",
         "--video-bit-rate=24M",
         "--max-size=1920",
@@ -216,6 +216,8 @@ def main():
 
     # 3. Dọn dẹp sau khi scrcpy đóng
     print("[*] Ung dung da dong. Dang don dep tien trinh...")
+    subprocess.run(["taskkill", "/F", "/FI", "WINDOWTITLE eq __Longtoitannatnhanratoilagay_Docked_Ribbon__"],
+                   capture_output=True)
     subprocess.run(["taskkill", "/F", "/FI", "WINDOWTITLE eq __Appcuatao_Docked_Ribbon__"],
                    capture_output=True)
 
